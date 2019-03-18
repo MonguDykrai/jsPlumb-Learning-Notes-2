@@ -70,6 +70,7 @@ import TaskNode from '../components/TaskNode';
 import DecisionNode from '../components/DecisionNode';
 import Vue from 'vue';
 import { setTimeout } from 'timers';
+import { debug, debuglog } from 'util';
 
 const Event = new Vue();
 
@@ -81,7 +82,7 @@ export default {
   },
 
   mounted: function () {
-    this.jspCanvasVueIns = this.$refs["refJspCanvas"]
+    this.jspCanvasVueIns = this.$refs["refJspCanvas"];
 
     // console.log(this.jspCanvasVueIns)
     this.initJsplumb();
@@ -146,7 +147,7 @@ export default {
       new comp({
         el: node, // 替换掉 node?
         propsData: props,
-        parent: this
+        parent: this.jspCanvasVueIns
       });
     },
 
@@ -155,19 +156,15 @@ export default {
 
         jsPlumb.importDefaults(this.defaultsOption);
 
-        
-
-        jsPlumb.bind("connection", (connection, originalEvent) => {
-          // console.log(connection);
-
+        jsPlumb.bind("connection", () => {
           this.saveFlowchart();
-
-          // console.log(this.flowChart);
         });
 
-        // jsPlumb.bind("connectionDetached", (connection, originalEvent) => {
-        //   console.log(connection);
-        // });
+        jsPlumb.bind("connectionDetached", (info) => {
+          jsPlumb.deleteConnection(info.connection);
+          jsPlumb.deleteEndpoint(info.connection);
+          this.saveFlowchart();
+        });
 
         jsPlumb.bind("beforeDrop", this.handleBeforeDrop);
 
@@ -182,25 +179,6 @@ export default {
 
     },
 
-    handleRemove: function (grandsonIns) {
-      if (!this.removeEventFlag) {
-        $(this.canvasId).on("click", ".button-remove", (e) => {
-          this.removeEventFlag = true;
-          const { currentTarget } = e;
-          const parentnode = $(currentTarget)[0].parentNode.parentNode;
-          jsPlumb.deleteConnectionsForElement(parentnode);
-          jsPlumb.removeAllEndpoints(parentnode);
-          $(parentnode).remove();
-          grandsonIns.$destroy();
-
-          this.numberOfElements = this.numberOfElements - 1;
-          this.saveFlowchart();
-        });
-      }
-
-      document.querySelector('.button-remove').click();
-    },
-
     repositionElement: function ({ id, posX, posY }) {
       $(`#${id}`).css("left", posX);
       $(`#${id}`).css("top", posY);
@@ -209,49 +187,23 @@ export default {
 
     addNode: function ({ id, posX, posY, scenario }) {
       if (typeof id == "undefined") {
-        this.numberOfElements++;
+        this.numberOfElements = this.numberOfElements + 1;
         id = "taskcontainer" + this.numberOfElements;
       }
 
-      // const taskNode = `
-      //   <div class="window task node" id="${id}" data-nodetype="task" style="left: ${posX}px; top: ${posY}px;">
-      //     <div class="ctrl-container">
-      //       <div class="button-remove">x</div>
-      //     </div>
-      //     <div class="details-container">
-      //       <label class="detail-label">Name</label>
-      //       <input class="detail-text" />
-      //     </div>
-      //   </div>
-      // `;
-
-      // const decisionNode = `
-      //   <div class="window decision node" id="${id}" data-nodetype="decision" style="left: ${posX}px; top: ${posY}px;">
-      //     <div class="ctrl-container" style="margin-top: -10px;">
-      //       <div class="button-remove">x</div>
-      //     </div>
-      //     <div
-      //       class="details-container"
-      //       style="margin: -20px 0 0 6px; min-height: 20px; font-size: 12px; text-align: center;"
-      //     >
-      //       <span>Decision</span>
-      //     </div>
-      //   </div>
-      // `;
-
       if (scenario == "task") {
-        // $(taskNode).appendTo(this.canvasId);
         this.mountComp(TaskNode, { prop: { id, posX, posY } });
       }
 
       if (scenario == "decision") {
-        // $(decisionNode).appendTo(this.canvasId);
         this.mountComp(DecisionNode, { prop: { id, posX, posY } });
       }
 
       this.addEndpoint({ id, scenario });
 
       jsPlumb.draggable(id);
+
+      this.saveFlowchart();
     },
 
     addEndpoint: function ({ id, scenario }) {
@@ -332,10 +284,16 @@ export default {
     },
 
     handleResetCanvas: function () {
-      // this.$children.forEach((item, index) => {
-      //   console.log(index)
-      //   // item.$destroy();
-      // });
+      const childrenIns = this.jspCanvasVueIns.$children.map(item => {
+        return item;
+      });
+
+      childrenIns.forEach(item => {
+        item.$destroy();
+      });
+
+      this.numberOfElements = 0;
+
       jsPlumb.empty("canvas");
     },
 
@@ -355,6 +313,7 @@ export default {
       const connections = [];
 
       $.each(jsPlumb.getConnections(), (idx, connection) => {
+        console.log(connection)
         connections.push({
           connectionId: connection.id,
           sourceId: connection.sourceId,
@@ -368,14 +327,12 @@ export default {
       this.flowChart.numberOfElements = this.numberOfElements;
       const flowChartJson = JSON.stringify(this.flowChart);
 
+      console.log(this.jsonOutput);
       this.jsonOutput = flowChartJson;
-
-      // $("#jsonOutput").val(this.flowChartJson);
     },
 
     loadFlowchart: function () {
-      this.flowChartJson = this.jsonOutput;
-      const flowChart = JSON.parse(this.flowChartJson);
+      const flowChart = JSON.parse(this.jsonOutput);
       const nodes = flowChart.nodes;
 
       $.each(nodes, (index, elem) => {
@@ -399,10 +356,12 @@ export default {
       $.each(connections, function (index, elem) {
         jsPlumb.connect({
           uuids: elem.uuids
-        })
+        });
       });
 
       this.numberOfElements = flowChart.numberOfElements;
+
+      this.jsonOutput = JSON.stringify(flowChart); // 用于解决 connections 和 numberOfElements 消失的问题
     },
 
     handleDrop: function (ev) {
