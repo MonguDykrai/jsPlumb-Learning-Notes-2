@@ -55,7 +55,8 @@
     <textarea
       id="jsonOutput"
       style="width:100%; height:140px;"
-    >{{ jsonOutput }}
+      :value="jsonOutput"
+    >
     </textarea>
   </div>
 </template>
@@ -119,19 +120,23 @@ export default {
 
         jsPlumb.importDefaults(this.defaultsOption);
 
-        $(this.canvasId).on("click", ".button-remove", function () {
-          const parentnode = $(this)[0].parentNode.parentNode;
+        $(this.canvasId).on("click", ".button-remove", (e) => {
+          const { currentTarget } = e;
+          const parentnode = $(currentTarget)[0].parentNode.parentNode;
           jsPlumb.deleteConnectionsForElement(parentnode);
           jsPlumb.removeAllEndpoints(parentnode);
           $(parentnode).remove();
+
+          this.numberOfElements = this.numberOfElements - 1;
+          this.saveFlowchart();
         });
 
         jsPlumb.bind("connection", (connection, originalEvent) => {
-          console.log(connection);
+          // console.log(connection);
 
           this.saveFlowchart();
 
-          console.log(this.flowChart);
+          // console.log(this.flowChart);
         });
 
         // jsPlumb.bind("connectionDetached", (connection, originalEvent) => {
@@ -145,6 +150,8 @@ export default {
         $(this.canvasId).on("dragover", this.handleDragover);
 
         $(this.canvasId).on("drop", this.handleDrop);
+
+        this.loadFlowchart();
       });
     },
 
