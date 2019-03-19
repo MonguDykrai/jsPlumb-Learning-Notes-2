@@ -55,7 +55,8 @@
     <textarea
       id="jsonOutput"
       style="width:100%; height:140px;"
-    >{{ jsonOutput }}
+      :value="jsonOutput"
+    >
     </textarea>
   </div>
 </template>
@@ -126,12 +127,42 @@ export default {
           $(parentnode).remove();
         });
 
+        $(this.canvasId).on("click", ".button-excute", function () {
+          const parentNodeId = this.parentNode.id;
+          // console.log(`id: ${parentNodeId}`);
+
+          var dependencyGraph = [];
+
+          function logDependency(id) {
+            const nodeId = document.querySelector(`#${id}`);
+
+            jsPlumb.getEndpoints(nodeId).forEach(item => {
+              if (item.isTarget) {
+                if (item.connections.length > 0) {
+                  const targetId = item.connections[0].targetId;
+                  // console.warn(`targetId: ${targetId}`);
+                  const sourceId = item.connections[0].source.id;
+                  // console.log(`sourceId: ${sourceId}`);
+                  dependencyGraph.push({ targetId, sourceId });
+                  return logDependency(sourceId);
+                }
+              }
+            });
+          }
+
+          logDependency(parentNodeId);
+
+          console.log(dependencyGraph);
+        });
+
         jsPlumb.bind("connection", (connection, originalEvent) => {
           console.log(connection);
 
-          this.saveFlowchart();
+          console.log(jsPlumb.getConnections())
 
-          console.log(this.flowChart);
+          // this.saveFlowchart();
+
+          // console.log(this.flowChart);
         });
 
         // jsPlumb.bind("connectionDetached", (connection, originalEvent) => {
@@ -165,9 +196,17 @@ export default {
           <div class="ctrl-container">
             <div class="button-remove">x</div>
           </div>
+
+          <img
+            class="button-excute"
+            src="https://upload-images.jianshu.io/upload_images/12334242-54852ac8d2b89685.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"
+            style="position: absolute; top: 8px; left: 52px; width: 36px;"
+          />
+
           <div class="details-container">
-            <label class="detail-label">Name</label>
-            <input class="detail-text" />
+            <!-- <label class="detail-label">Name</label> -->
+            <!-- <input class="detail-text" /> -->
+            <div style="color: red;">Task</div>
           </div>
         </div>
       `;
@@ -175,8 +214,15 @@ export default {
       const decisionNode = `
         <div class="window decision node" id="${id}" data-nodetype="decision" style="left: ${posX}px; top: ${posY}px;">
           <div class="ctrl-container" style="margin-top: -10px;">
-            <div class="button-remove">x</div>
+            <div class="button-remove" style="position: absolute; right: 4px; top: 6px;">x</div>
           </div>
+
+          <img
+            class="button-excute"
+            src="https://upload-images.jianshu.io/upload_images/12334242-54852ac8d2b89685.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"
+            style="position: absolute; top: 8px; left: 46px; width: 36px;"
+          />
+
           <div
             class="details-container"
             style="margin: -20px 0 0 6px; min-height: 20px; font-size: 12px; text-align: center;"
@@ -410,9 +456,11 @@ export default {
   border-radius: 0.5em;
   box-shadow: 2px 2px 5px #AAAAAA;
   color: black;
-  min-height: 3em;
+  /* min-height: 3em; */
   position: absolute;
-  min-width: 5em;
+  /* min-width: 5em; */
+
+  width: 140px;
 }
 
 /* Start End */
@@ -445,12 +493,14 @@ export default {
   box-shadow: 0 0 0 1px #CCCCCC;
   color: #000000;
   display: block;
-  height: 80px;
+  /* height: 80px; */
+  height: 100px;
   overflow: hidden;
   /* position: relative; */
   position: absolute;
   text-decoration: none;
-  width: 80px;
+  /* width: 80px; */
+  width: 120px;
 }
 
 .decision .ctrl-container {
