@@ -106,7 +106,7 @@ export default {
       
       flowChart: {},
 
-      jsonOutput: '{"nodes":[{"blockId":"taskcontainer1","nodetype":"task","positionX":202,"positionY":108},{"blockId":"taskcontainer2","nodetype":"decision","positionX":1137,"positionY":251},{"blockId":"taskcontainer3","nodetype":"decision","positionX":1386,"positionY":249},{"blockId":"taskcontainer4","nodetype":"task","positionX":873,"positionY":110},{"blockId":"taskcontainer5","nodetype":"decision","positionX":442,"positionY":426},{"blockId":"taskcontainer6","nodetype":"decision","positionX":1601,"positionY":317}],"connections":[{"connectionId":"con_37","sourceId":"taskcontainer1","targetId":"taskcontainer4","uuids":["taskcontainer1rm-out","taskcontainer4lt-in"]},{"connectionId":"con_38","sourceId":"taskcontainer2","targetId":"taskcontainer3","uuids":["taskcontainer2rm-out","taskcontainer3lm-in"]},{"connectionId":"con_39","sourceId":"taskcontainer5","targetId":"taskcontainer4","uuids":["taskcontainer5rm-out","taskcontainer4lm-in"]},{"connectionId":"con_40","sourceId":"taskcontainer4","targetId":"taskcontainer2","uuids":["taskcontainer4rm-out","taskcontainer2lm-in"]},{"connectionId":"con_41","sourceId":"taskcontainer3","targetId":"taskcontainer6","uuids":["taskcontainer3rm-out","taskcontainer6lm-in"]}],"numberOfElements":6}',
+      jsonOutput: '{"nodes":[{"blockId":"decisioncontainer1","nodetype":"decision","positionX":1130,"positionY":267},{"blockId":"taskcontainer2","nodetype":"task","positionX":729,"positionY":170},{"blockId":"decisioncontainer3","nodetype":"decision","positionX":745,"positionY":401},{"blockId":"taskcontainer4","nodetype":"task","positionX":328,"positionY":368}],"connections":[{"connectionId":"con_14","sourceId":"taskcontainer2","targetId":"decisioncontainer1","uuids":["taskcontainer2rm-out","decisioncontainer1ll-in"]},{"connectionId":"con_24","sourceId":"decisioncontainer3","targetId":"decisioncontainer1","uuids":["decisioncontainer3rm-out","decisioncontainer1lr-in"]},{"connectionId":"con_32","sourceId":"taskcontainer4","targetId":"decisioncontainer3","uuids":["taskcontainer4rm-out","decisioncontainer3ll-in"]}],"numberOfElements":4}',
     }
   },
 
@@ -131,7 +131,33 @@ export default {
           const parentNodeId = this.parentNode.id;
           // console.log(`id: ${parentNodeId}`);
 
-          var dependencyGraph = [];
+          // var dependencyGraph = [];
+
+          // function logDependency(id) {
+          //   const nodeId = document.querySelector(`#${id}`);
+
+          //   jsPlumb.getEndpoints(nodeId).forEach(item => {
+          //     if (item.isTarget) {
+          //       if (item.connections.length > 0) {
+          //         const targetId = item.connections[0].targetId;
+          //         const targetParams = ($(`#${targetId}`).data("param"));
+
+          //         const sourceId = item.connections[0].source.id;
+          //         const sourceParams = ($(`#${sourceId}`).data("param"));
+          //         dependencyGraph.push({ targetId, sourceId, sourceParams });
+          //         // dependencyGraph.push({ targetId, sourceId, targetParams, sourceParams });
+          //         return logDependency(sourceId);
+          //       }
+          //     }
+          //   });
+          // }
+
+          // logDependency(parentNodeId);
+
+          // console.log(dependencyGraph);
+
+          var dependencyGraph = {};
+          var level = 1;
 
           function logDependency(id) {
             const nodeId = document.querySelector(`#${id}`);
@@ -139,11 +165,27 @@ export default {
             jsPlumb.getEndpoints(nodeId).forEach(item => {
               if (item.isTarget) {
                 if (item.connections.length > 0) {
+                  const isLeft = item.connections[0].getUuids().some(item => {
+                    return item.indexOf("ll-") > 0;
+                  });
+
+                  const isRight = item.connections[0].getUuids().some(item => {
+                    return item.indexOf("lr-") > 0;
+                  });
+
                   const targetId = item.connections[0].targetId;
-                  // console.warn(`targetId: ${targetId}`);
+                  const targetParams = ($(`#${targetId}`).data("param"));
+
                   const sourceId = item.connections[0].source.id;
-                  // console.log(`sourceId: ${sourceId}`);
-                  dependencyGraph.push({ targetId, sourceId });
+                  const sourceParams = ($(`#${sourceId}`).data("param"));
+
+                  if (!dependencyGraph[targetId]) {
+                    dependencyGraph[targetId] = { level, collection: [], targetId };
+                    level++;
+                  }
+
+                  dependencyGraph[targetId].collection.push({ targetId, sourceId, targetParams, sourceParams, isLeft, isRight });
+
                   return logDependency(sourceId);
                 }
               }
@@ -156,9 +198,9 @@ export default {
         });
 
         jsPlumb.bind("connection", (connection, originalEvent) => {
-          console.log(connection);
+          // console.log(connection);
 
-          console.log(jsPlumb.getConnections())
+          // console.log(jsPlumb.getConnections())
 
           // this.saveFlowchart();
 
@@ -186,48 +228,70 @@ export default {
     },
 
     addNode: function ({ id, posX, posY, scenario }) {
+      // console.error(scenario);
       if (typeof id == "undefined") {
         this.numberOfElements++;
-        id = "taskcontainer" + this.numberOfElements;
+        id = `${scenario}container` + this.numberOfElements;
       }
 
+      // data-param='{"processId":"${id}","attributeFilterType":"all","method":"Z-transformation"}'
+
       const taskNode = `
-        <div class="window task node" id="${id}" data-nodetype="task" style="left: ${posX}px; top: ${posY}px;">
+        <div class="window task node" id="${id}"
+          data-nodetype="task"
+          style="left: ${posX}px; top: ${posY}px;"
+          data-param='{"processId":"${id}","method":"Z-transformation"}'
+        >
           <div class="ctrl-container">
             <div class="button-remove">x</div>
           </div>
 
           <img
             class="button-excute"
-            src="https://upload-images.jianshu.io/upload_images/12334242-54852ac8d2b89685.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"
-            style="position: absolute; top: 8px; left: 52px; width: 36px;"
+            src="https://upload-images.jianshu.io/upload_images/12334242-02c3d1c5ef32a57d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"
+            style="position: absolute; top: 20px; width: 30px; transform: translateX(-50%);"
           />
 
-          <div class="details-container">
+          <div 
+            class="details-container"
+            style="display: flex; justify-content: center; align-items: center;"
+          >
             <!-- <label class="detail-label">Name</label> -->
             <!-- <input class="detail-text" /> -->
-            <div style="color: red;">Task</div>
+            <span
+              style="color: red; font-weight: 700; font-size: 10px;"
+            >
+              ${id}
+            </span>
           </div>
         </div>
       `;
 
+      // data-param='{"processId":"taskcontainer1","useInput":true,"cacheProcess":true}'
+
       const decisionNode = `
-        <div class="window decision node" id="${id}" data-nodetype="decision" style="left: ${posX}px; top: ${posY}px;">
+        <div
+          class="window decision node"
+          id="${id}"
+          data-nodetype="decision"
+          style="left: ${posX}px; top: ${posY}px;"
+          data-param='{"processId":"${id}","useInput":true}'
+        >
           <div class="ctrl-container" style="margin-top: -10px;">
             <div class="button-remove" style="position: absolute; right: 4px; top: 6px;">x</div>
           </div>
 
           <img
             class="button-excute"
-            src="https://upload-images.jianshu.io/upload_images/12334242-54852ac8d2b89685.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"
-            style="position: absolute; top: 8px; left: 46px; width: 36px;"
+            src="https://upload-images.jianshu.io/upload_images/12334242-02c3d1c5ef32a57d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"
+            style="position: absolute; top: 20px; width: 30px; transform: translateX(-50%);"
           />
 
           <div
             class="details-container"
-            style="margin: -20px 0 0 6px; min-height: 20px; font-size: 12px; text-align: center;"
+            style="margin: -20px 0 0 6px; min-height: 20px; font-size: 12px; text-align: center; display: flex; justify-content: center; align-items: center;"
           >
-            <span>Decision</span>
+            <span style="color: blue; font-weight: 700; font-size: 10px;">${id}</span>
           </div>
         </div>
       `;
@@ -250,36 +314,9 @@ export default {
         jsPlumb.addEndpoint(
           id,
           {
-            uuid: id + "lt-in",
-            isTarget: true,
-            anchor: [0, 0.2]
-          }
-        );
-
-        jsPlumb.addEndpoint(
-          id,
-          {
             uuid: id + "lm-in",
             isTarget: true,
             anchor: [0, 0.5]
-          }
-        );
-
-        jsPlumb.addEndpoint(
-          id,
-          {
-            uuid: id + "lb-in",
-            isTarget: true,
-            anchor: [0, 0.8]
-          }
-        );
-
-        jsPlumb.addEndpoint(
-          id,
-          {
-            uuid: id + "tm-in",
-            isTarget: true,
-            anchor: [0.5, 0, 0, -1, 0, 0],
           }
         );
 
@@ -294,12 +331,57 @@ export default {
       }
 
       if (scenario == "decision") {
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lt-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.2]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lm-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.5]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lb-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.8]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "tm-in",
+        //     isTarget: true,
+        //     anchor: [0.5, 0, 0, -1, 0, 0],
+        //   }
+        // );
+
         jsPlumb.addEndpoint(
           id,
           {
-            uuid: id + "lm-in",
+            uuid: id + "ll-in",
             isTarget: true,
-            anchor: [0, 0.5]
+            anchor: [0, 0.2]
+          }
+        );
+
+        jsPlumb.addEndpoint(
+          id,
+          {
+            uuid: id + "lr-in",
+            isTarget: true,
+            anchor: [0, 0.8]
           }
         );
 
@@ -460,7 +542,8 @@ export default {
   position: absolute;
   /* min-width: 5em; */
 
-  width: 140px;
+  height: 90px;
+  width: 160px;
 }
 
 /* Start End */
@@ -494,13 +577,13 @@ export default {
   color: #000000;
   display: block;
   /* height: 80px; */
-  height: 100px;
+  height: 90px;
   overflow: hidden;
   /* position: relative; */
   position: absolute;
   text-decoration: none;
   /* width: 80px; */
-  width: 120px;
+  width: 160px;
 }
 
 .decision .ctrl-container {
