@@ -157,21 +157,39 @@ export default {
           // console.log(dependencyGraph);
 
           var dependencyGraph = {};
-          var level = 1;
+          var serialNumber = 1;
+          // var index = 0;
 
           function logDependency(id) {
+            // console.log(++index);
+
             const nodeId = document.querySelector(`#${id}`);
 
             jsPlumb.getEndpoints(nodeId).forEach(item => {
               if (item.isTarget) {
                 if (item.connections.length > 0) {
-                  const isLeft = item.connections[0].getUuids().some(item => {
-                    return item.indexOf("ll-") > 0;
-                  });
 
-                  const isRight = item.connections[0].getUuids().some(item => {
-                    return item.indexOf("lr-") > 0;
-                  });
+                  function checkPosition() {
+                    let position;
+
+                    const isLeft = item.connections[0].getUuids().some(item => {
+                      return item.indexOf("ll-") > 0;
+                    });
+
+                    const isRight = item.connections[0].getUuids().some(item => {
+                      return item.indexOf("lr-") > 0;
+                    });
+
+                    if (isLeft) {
+                      position = "left";
+                    }
+
+                    if (isRight) {
+                      position = "right";
+                    }
+                  }
+
+                  const position = checkPosition();
 
                   const targetId = item.connections[0].targetId;
                   const targetParams = ($(`#${targetId}`).data("param"));
@@ -180,11 +198,16 @@ export default {
                   const sourceParams = ($(`#${sourceId}`).data("param"));
 
                   if (!dependencyGraph[targetId]) {
-                    dependencyGraph[targetId] = { level, collection: [], targetId };
-                    level++;
+                    dependencyGraph[targetId] = { serialNumber: `No.${serialNumber}`, collection: [], targetId };
+                    serialNumber++;
                   }
 
-                  dependencyGraph[targetId].collection.push({ targetId, sourceId, targetParams, sourceParams, isLeft, isRight });
+                  const srlNo = dependencyGraph[targetId].serialNumber;
+
+                  dependencyGraph[targetId].collection.push({ position, serialNumber: srlNo, targetId, sourceId });
+                  const length = dependencyGraph[targetId].collection.length;
+                  dependencyGraph[targetId].collection[length - 1].serialNumber = dependencyGraph[targetId].collection[length - 1].serialNumber + `-${length}`
+                  // dependencyGraph[targetId].collection.push({ serialNumber: dependencyGraph[targetId].serialNumber, targetId, sourceId, targetParams, sourceParams, position });
 
                   return logDependency(sourceId);
                 }
@@ -195,6 +218,11 @@ export default {
           logDependency(parentNodeId);
 
           console.log(dependencyGraph);
+
+          // Object.keys(dependencyGraph).forEach(key => {
+          //   let value = dependencyGraph[key];
+          //   console.log(value);
+          // });
         });
 
         jsPlumb.bind("connection", (connection, originalEvent) => {
