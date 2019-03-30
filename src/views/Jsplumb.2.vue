@@ -131,7 +131,6 @@ export default {
           const parentNodeId = this.parentNode.id;
 
           var dependencyGraph = {};
-          var collection = [];
 
           function logDependency(id) {
             if (id.indexOf("datasource") >= 0) {
@@ -175,13 +174,11 @@ export default {
                   const sourceId = item.connections[0].source.id;
                   const sourceParams = ($(`#${sourceId}`).data("param"));
 
-                  collection.push({ position, sourceId, targetId });
-
                   if (!dependencyGraph[targetId]) {
                     dependencyGraph[targetId] = { collection: [], targetId };
                   }
 
-                  dependencyGraph[targetId].collection.push({ position, sourceId, targetId, id: 1 });
+                  dependencyGraph[targetId].collection.push({ position, targetId, sourceId });
                 }
               }
             });
@@ -199,23 +196,17 @@ export default {
               return logDependency(sourceId);
             });
 
-            // return dependencyGraph;
+            return dependencyGraph;
           }
 
           logDependency(parentNodeId);
 
-          // console.log(dependencyGraph);
-          const arr = [];
+          console.log(dependencyGraph);
 
-          collection.forEach(item => {
-            collection.forEach(item2 => {
-              if (item.sourceId == item2.targetId) {
-                arr.push(item)
-              }
-            })
-          });
-
-          console.log(arr)
+          // Object.keys(dependencyGraph).forEach(key => {
+          //   let value = dependencyGraph[key];
+          //   console.log(value);
+          // });
         });
 
         jsPlumb.bind("connection", (connection, originalEvent) => {
@@ -352,6 +343,42 @@ export default {
       }
 
       if (scenario == "decision") {
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lt-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.2]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lm-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.5]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lb-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.8]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "tm-in",
+        //     isTarget: true,
+        //     anchor: [0.5, 0, 0, -1, 0, 0],
+        //   }
+        // );
+
         jsPlumb.addEndpoint(
           id,
           {

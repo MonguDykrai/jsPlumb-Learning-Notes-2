@@ -352,6 +352,42 @@ export default {
       }
 
       if (scenario == "decision") {
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lt-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.2]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lm-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.5]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lb-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.8]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "tm-in",
+        //     isTarget: true,
+        //     anchor: [0.5, 0, 0, -1, 0, 0],
+        //   }
+        // );
+
         jsPlumb.addEndpoint(
           id,
           {

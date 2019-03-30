@@ -106,7 +106,7 @@ export default {
       
       flowChart: {},
 
-      jsonOutput: '{"nodes":[{"blockId":"decisioncontainer1","nodetype":"decision","positionX":1130,"positionY":267},{"blockId":"taskcontainer2","nodetype":"task","positionX":729,"positionY":170},{"blockId":"decisioncontainer3","nodetype":"decision","positionX":745,"positionY":401},{"blockId":"taskcontainer4","nodetype":"task","positionX":328,"positionY":368},{"blockId":"datasource2","nodetype":"task","positionX":85,"positionY":376},{"blockId":"datasource1","nodetype":"task","positionX":272,"positionY":186}],"connections":[{"connectionId":"con_21","sourceId":"taskcontainer2","targetId":"decisioncontainer1","uuids":["taskcontainer2rm-out","decisioncontainer1ll-in"]},{"connectionId":"con_22","sourceId":"decisioncontainer3","targetId":"decisioncontainer1","uuids":["decisioncontainer3rm-out","decisioncontainer1lr-in"]},{"connectionId":"con_23","sourceId":"taskcontainer4","targetId":"decisioncontainer3","uuids":["taskcontainer4rm-out","decisioncontainer3ll-in"]},{"connectionId":"con_31","sourceId":"datasource2","targetId":"taskcontainer4","uuids":["datasource2rm-out","taskcontainer4lm-in"]},{"connectionId":"con_39","sourceId":"datasource1","targetId":"taskcontainer2","uuids":["datasource1rm-out","taskcontainer2lm-in"]}],"numberOfElements":6}',
+      jsonOutput: '{"nodes":[{"blockId":"decisioncontainer1","nodetype":"decision","positionX":1130,"positionY":267},{"blockId":"taskcontainer2","nodetype":"task","positionX":729,"positionY":170},{"blockId":"decisioncontainer3","nodetype":"decision","positionX":745,"positionY":401},{"blockId":"taskcontainer4","nodetype":"task","positionX":328,"positionY":368}],"connections":[{"connectionId":"con_14","sourceId":"taskcontainer2","targetId":"decisioncontainer1","uuids":["taskcontainer2rm-out","decisioncontainer1ll-in"]},{"connectionId":"con_24","sourceId":"decisioncontainer3","targetId":"decisioncontainer1","uuids":["decisioncontainer3rm-out","decisioncontainer1lr-in"]},{"connectionId":"con_32","sourceId":"taskcontainer4","targetId":"decisioncontainer3","uuids":["taskcontainer4rm-out","decisioncontainer3ll-in"]}],"numberOfElements":4}',
     }
   },
 
@@ -129,14 +129,104 @@ export default {
 
         $(this.canvasId).on("click", ".button-excute", function () {
           const parentNodeId = this.parentNode.id;
+          // console.log(`id: ${parentNodeId}`);
+
+          // var dependencyGraph = [];
+
+          // function logDependency(id) {
+          //   const nodeId = document.querySelector(`#${id}`);
+
+          //   jsPlumb.getEndpoints(nodeId).forEach(item => {
+          //     if (item.isTarget) {
+          //       if (item.connections.length > 0) {
+          //         const targetId = item.connections[0].targetId;
+          //         const targetParams = ($(`#${targetId}`).data("param"));
+
+          //         const sourceId = item.connections[0].source.id;
+          //         const sourceParams = ($(`#${sourceId}`).data("param"));
+          //         dependencyGraph.push({ targetId, sourceId, sourceParams });
+          //         // dependencyGraph.push({ targetId, sourceId, targetParams, sourceParams });
+          //         return logDependency(sourceId);
+          //       }
+          //     }
+          //   });
+          // }
+
+          // logDependency(parentNodeId);
+
+          // console.log(dependencyGraph);
+
+          // ---
+
+          // var dependencyGraph = {};
+          // var serialNumber = 1;
+          // // var index = 0;
+
+          // function logDependency(id) {
+          //   // console.log(++index);
+
+          //   const nodeId = document.querySelector(`#${id}`);
+
+          //   jsPlumb.getEndpoints(nodeId).forEach(item => {
+          //     if (item.isTarget) {
+          //       if (item.connections.length > 0) {
+
+          //         function checkPosition() {
+          //           let position;
+
+          //           const isLeft = item.connections[0].getUuids().some(item => {
+          //             return item.indexOf("ll-") > 0;
+          //           });
+
+          //           const isRight = item.connections[0].getUuids().some(item => {
+          //             return item.indexOf("lr-") > 0;
+          //           });
+
+          //           if (isLeft) {
+          //             position = "left";
+          //           }
+
+          //           if (isRight) {
+          //             position = "right";
+          //           }
+
+          //           return position;
+          //         }
+
+          //         const position = checkPosition();
+
+          //         const targetId = item.connections[0].targetId;
+          //         const targetParams = ($(`#${targetId}`).data("param"));
+
+          //         const sourceId = item.connections[0].source.id;
+          //         const sourceParams = ($(`#${sourceId}`).data("param"));
+
+          //         if (!dependencyGraph[targetId]) {
+          //           dependencyGraph[targetId] = { serialNumber: `No.${serialNumber}`, collection: [], targetId };
+          //           serialNumber++;
+          //         }
+
+          //         const srlNo = dependencyGraph[targetId].serialNumber;
+
+          //         dependencyGraph[targetId].collection.push({ position, serialNumber: srlNo, targetId, sourceId });
+          //         const length = dependencyGraph[targetId].collection.length;
+          //         dependencyGraph[targetId].collection[length - 1].serialNumber = dependencyGraph[targetId].collection[length - 1].serialNumber + `-${length}`
+          //         // dependencyGraph[targetId].collection.push({ serialNumber: dependencyGraph[targetId].serialNumber, targetId, sourceId, targetParams, sourceParams, position });
+
+          //         return logDependency(sourceId);
+          //       }
+          //     }
+          //   });
+          // }
+
+          // ---
 
           var dependencyGraph = {};
-          var collection = [];
+          var serialNumber = 1;
+          // var index = 0;
 
           function logDependency(id) {
-            if (id.indexOf("datasource") >= 0) {
-              return;
-            }
+            // console.log(++index);
 
             const nodeId = document.querySelector(`#${id}`);
 
@@ -168,54 +258,45 @@ export default {
 
                   const position = checkPosition();
 
-                  
                   const targetId = item.connections[0].targetId;
                   const targetParams = ($(`#${targetId}`).data("param"));
 
                   const sourceId = item.connections[0].source.id;
                   const sourceParams = ($(`#${sourceId}`).data("param"));
 
-                  collection.push({ position, sourceId, targetId });
-
                   if (!dependencyGraph[targetId]) {
-                    dependencyGraph[targetId] = { collection: [], targetId };
+                    dependencyGraph[targetId] = { serialNumber: `No.${serialNumber}`, collection: [], targetId };
+                    serialNumber++;
+                    // dependencyGraph[targetId] = { serialNumber: "", collection: [], targetId };
                   }
 
-                  dependencyGraph[targetId].collection.push({ position, sourceId, targetId, id: 1 });
+                  // debugger
+                  Object.keys(dependencyGraph).forEach(key => {
+                    let value = dependencyGraph[key];
+                    console.log(value.collection);
+                  });
+
+                  const srlNo = dependencyGraph[targetId].serialNumber;
+
+                  dependencyGraph[targetId].collection.push({ position, serialNumber: srlNo, targetId, sourceId });
+                  const length = dependencyGraph[targetId].collection.length;
+                  dependencyGraph[targetId].collection[length - 1].serialNumber = dependencyGraph[targetId].collection[length - 1].serialNumber + `-${length}`
+                  // dependencyGraph[targetId].collection.push({ serialNumber: dependencyGraph[targetId].serialNumber, targetId, sourceId, targetParams, sourceParams, position });
+
+                  // return logDependency(sourceId);
                 }
               }
             });
-
-            let sourceIds = [];
-
-            Object.keys(dependencyGraph).forEach(key => {
-              let value = dependencyGraph[key];
-              sourceIds = value.collection.map(item => {
-                return item.sourceId;
-              });
-            });
-
-            sourceIds.forEach(sourceId => {
-              return logDependency(sourceId);
-            });
-
-            // return dependencyGraph;
           }
 
           logDependency(parentNodeId);
 
-          // console.log(dependencyGraph);
-          const arr = [];
+          console.log(dependencyGraph);
 
-          collection.forEach(item => {
-            collection.forEach(item2 => {
-              if (item.sourceId == item2.targetId) {
-                arr.push(item)
-              }
-            })
-          });
-
-          console.log(arr)
+          // Object.keys(dependencyGraph).forEach(key => {
+          //   let value = dependencyGraph[key];
+          //   console.log(value);
+          // });
         });
 
         jsPlumb.bind("connection", (connection, originalEvent) => {
@@ -352,6 +433,42 @@ export default {
       }
 
       if (scenario == "decision") {
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lt-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.2]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lm-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.5]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "lb-in",
+        //     isTarget: true,
+        //     anchor: [0, 0.8]
+        //   }
+        // );
+
+        // jsPlumb.addEndpoint(
+        //   id,
+        //   {
+        //     uuid: id + "tm-in",
+        //     isTarget: true,
+        //     anchor: [0.5, 0, 0, -1, 0, 0],
+        //   }
+        // );
+
         jsPlumb.addEndpoint(
           id,
           {
