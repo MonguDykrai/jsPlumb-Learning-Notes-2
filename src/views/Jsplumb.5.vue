@@ -60,7 +60,6 @@
 
     data: function () {
       return {
-        jsonOutput: "",
         nodeType: {
           task: {
             blockId: "",
@@ -145,8 +144,6 @@
         const { data } = await requestNodeList();
 
         _vueThis.flowChart = data;
-
-        _vueThis.jsonOutput = _vueThis.toJSON(_vueThis.flowChart);
 
         _vueThis.initJsplumb();
 
@@ -282,9 +279,6 @@
           return false;
         }
 
-        // const jsPlumbInstance = jsPlumb.getInstance();
-        // jsPlumbInstance.reset();
-
         return true;
       },
 
@@ -306,7 +300,6 @@
         jsPlumb.empty("canvas");
         this.nodeList = [];
         this.flowChart = {};
-        this.jsonOutput = "";
       },
 
       saveFlowchart: function () {
@@ -334,47 +327,33 @@
         this.flowChart.connections = connections;
         this.flowChart.numberOfElements = nodes.length;
 
-        this.jsonOutput = this.toJSON(this.flowChart);
-
         this.updateTask();
       },
 
       updateTask: function () {
-        const _vueThis = this;
-        const promiseUpdate = function () {
-          return new Promise((resolve, reject) => {
-            fetch(
-              "http://localhost:3000/update-task-info",
-              {
-                method: "post",
-                body: JSON.stringify({
-                  frontendData: {
-                    ..._vueThis.flowChart
-                  }
-                }),
-                headers: {
-                  "content-type": "application/json"
-                }
+        fetch(
+          "http://localhost:3000/update-task-info",
+          {
+            method: "post",
+            body: JSON.stringify({
+              frontendData: {
+                ...this.flowChart
               }
-            )
-              .then(res => {
-                return res.json();
-              })
-              .then(response => {
-                resolve(response);
-              })
-              .catch(error => {
-                reject(error);
-              });
+            }),
+            headers: {
+              "content-type": "application/json"
+            }
+          }
+        )
+          .then(res => {
+            return res.json();
+          })
+          .then(response => {
+            console.log(response);
+          })
+          .catch(error => {
+            console.log(error);
           });
-        }
-
-        async function asyncUpdate() {
-          await promiseUpdate();
-          _vueThis.flowChart = {};
-        }
-
-        asyncUpdate();
       },
 
       loadFlowchart: function () {
@@ -435,8 +414,8 @@
     position: absolute;
     /* min-width: 5em; */
 
-    height: 120px;
-    width: 180px;
+    height: 90px;
+    width: 160px;
   }
 
   /* Start End */
