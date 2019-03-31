@@ -20,18 +20,18 @@
             Add Decision
           </div>
         </div>
-        <div>
-          <button id="saveButton" class="button menu-button" @click="handleSaveCanvas">
+        <div style="margin-top: 10px;">
+          <button id="saveButton" style="float: left; width: 40%;" class="button menu-button" @click="handleSaveCanvas">
             Save
           </button>
-          <button id="loadButton" class="button menu-button" style="float: right;" @click="handleLoadCanvas">
-            Load
+          <button id="clearButton" style="width: 40%;" class="button menu-button clear-button"
+            @click="handleClearCanvas">
+            Clear
           </button>
         </div>
+
         <div>
-          <button id="resetButton" class="button menu-button reset-button" @click="handleResetCanvas">
-            Reset
-          </button>
+
         </div>
       </div>
     </div>
@@ -296,13 +296,10 @@
         this.saveFlowchart();
       },
 
-      handleLoadCanvas: function () {
-        this.loadFlowchart();
-      },
-
-      handleResetCanvas: function () {
+      handleClearCanvas: function () {
         jsPlumb.empty("canvas");
         this.nodeList = [];
+        this.flowChart = {};
       },
 
       saveFlowchart: function () {
@@ -559,7 +556,7 @@
     cursor: pointer;
   }
 
-  .reset-button {
+  .clear-button {
     float: right;
     margin-bottom: 10px;
     background: rgba(0, 169, 200, 1);
