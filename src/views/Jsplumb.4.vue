@@ -65,7 +65,7 @@
           },
           decision: {
             blockId: "",
-            nodeType: "decision",
+            nodeType: "task",
             positionX: 0,
             positionY: 0,
             param: {
@@ -171,28 +171,35 @@
     mounted: function () {
       const _vueThis = this;
 
-      const requestNodeList = function () {
+      const requestNodeList = function (sourceName) {
         return new Promise(function (resolve, reject, a) {
           fetch("http://localhost:3000/get-task-info")
             .then(res => {
               return res.json();
             }).then(data => {
+              // console.log(data);
               resolve(data);
             });
         });
       }
 
-      async function init() {
-        const { data } = await requestNodeList();
+      requestNodeList();
 
-        _vueThis.flowChart = data;
+      // async function init() {
+      //   const nodes = await requestNodeList("nodes");
+      //   const connections = await requestNodeList("connections");
 
-        _vueThis.initJsplumb();
+      //   _vueThis.nodeList = nodes;
+      //   _vueThis.connections = connections;
 
-        _vueThis.loadFlowchart();
-      }
+      //   // _vueThis.loadFlowchart();
 
-      init();
+      //   _vueThis.initJsplumb();
+      // }
+
+      // init();
+
+      this.initJsplumb();
     },
 
     methods: {
@@ -249,6 +256,13 @@
         jsPlumb.ready(() => {
           jsPlumb.importDefaults(this.defaultsOption);
 
+          // this.nodeList.forEach(node => {
+          //   const { blockId, nodeType } = node;
+
+          //   jsPlumb.draggable(blockId);
+          //   this.addEndpoint({ blockId, nodeType });
+          // });
+
           jsPlumb.bind("beforeDrop", this.handleBeforeDrop);
 
           $(".ele-draggable").on("dragstart", this.handleDragstart);
@@ -304,9 +318,9 @@
 
         this.nodeList.push(newNode);
 
-        
+        jsPlumb.draggable(blockId);
+
         setTimeout(() => {
-          jsPlumb.draggable(blockId);
           this.addEndpoint({ blockId, nodeType: newNode.nodeType });
         }, 0);
       },
@@ -338,7 +352,7 @@
       },
 
       handleLoadCanvas: function () {
-        // this.loadFlowchart();
+        this.loadFlowchart();
       },
 
       handleResetCanvas: function () {
@@ -370,30 +384,33 @@
         this.flowChart.nodes = nodes;
         this.flowChart.connections = connections;
         this.flowChart.numberOfElements = nodes.length;
-
-        console.log(this.toJSON(this.flowChart));
       },
 
-      loadFlowchart: function () {
-        const _vueThis = this;
+      loadFlowchart: function (resData) {
+        console.log(resData)
+        // const _vueThis = this;
+        // this.nodeList = [];
 
-        const { nodes } = _vueThis.flowChart;
+        // const nodes = this.nodeList;
+        // // const nodes = JSON.parse(this.jsonOutput).nodes
 
-        $.each(nodes, (index, elem) => {
-          const id = elem.blockId;
-          const posX = elem.positionX;
-          const posY = elem.positionY;
+        // $.each(nodes, (index, elem) => {
+        //   const id = elem.blockId;
+        //   const posX = elem.positionX;
+        //   const posY = elem.positionY;
 
-          _vueThis.addNode({ scenario: elem.nodeType, posX, posY });
-        });
+        //   _vueThis.addNode({ scenario: elem.nodeType, posX, posY });
+        // });
 
-        const { connections } = _vueThis.flowChart;
+        // const connections = this.connections;
 
-        $.each(connections, function (index, elem) {
-          jsPlumb.connect({
-            uuids: elem.uuids
-          });
-        });
+        // $.each(connections, function (index, elem) {
+        //   jsPlumb.connect({
+        //     uuids: elem.uuids
+        //   })
+        // });
+
+        // this.numberOfElements = flowChart.numberOfElements;
       },
 
       toJSON: function (src) {
