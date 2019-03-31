@@ -164,6 +164,32 @@
 
         flowChart: {},
 
+        // flowChart: {
+        //   "nodes": [
+        //     {
+        //       "blockId": "decision503114",
+        //       "nodeType": "decision",
+        //       "positionX": 516,
+        //       "positionY": 189
+        //     },
+        //     {
+        //       "blockId": "task504106",
+        //       "nodeType": "task",
+        //       "positionX": 945,
+        //       "positionY": 212
+        //     }
+        //   ],
+        //   "connections": [
+        //     {
+        //       "uuids": [
+        //         "decision503114rm-out",
+        //         "task504106lm-in"
+        //       ]
+        //     }
+        //   ],
+        //   "numberOfElements": 2
+        // },
+
         jsonOutput: ""
       }
     },
@@ -193,6 +219,8 @@
       }
 
       init();
+
+      // this.initJsplumb();
     },
 
     methods: {
@@ -244,6 +272,8 @@
             anchor: "Right"
           }
         );
+
+        jsPlumb.draggable(blockId);
       },
       initJsplumb: function () {
         jsPlumb.ready(() => {
@@ -271,13 +301,13 @@
         this.addNode({ scenario: data, posX, posY });
       },
 
-      addNode: function ({ scenario, posX, posY }) {
+      addNode: function ({ scenario, posX, posY, blockId }) {
         let newNode,
-          uuid = String(Date.now()).substr(-6),
-          blockId;
+          uuid = String(Date.now()).substr(-6);
+
 
         if (scenario.toLowerCase().indexOf("task") > -1) {
-          blockId = `task${uuid}`;
+          blockId = blockId ? blockId : `task${uuid}`;
 
           newNode = {
             ...this.nodeType["task"],
@@ -290,7 +320,7 @@
         }
 
         if (scenario.toLowerCase().indexOf("decision") > -1) {
-          blockId = `decision${uuid}`;
+          blockId = blockId ? blockId : `decision${uuid}`;
 
           newNode = {
             ...this.nodeType["decision"],
@@ -304,9 +334,8 @@
 
         this.nodeList.push(newNode);
 
-        
+
         setTimeout(() => {
-          jsPlumb.draggable(blockId);
           this.addEndpoint({ blockId, nodeType: newNode.nodeType });
         }, 0);
       },
@@ -338,7 +367,7 @@
       },
 
       handleLoadCanvas: function () {
-        // this.loadFlowchart();
+        this.loadFlowchart();
       },
 
       handleResetCanvas: function () {
@@ -384,16 +413,18 @@
           const posX = elem.positionX;
           const posY = elem.positionY;
 
-          _vueThis.addNode({ scenario: elem.nodeType, posX, posY });
+          _vueThis.addNode({ scenario: elem.nodeType, posX, posY, blockId: elem.blockId });
         });
 
         const { connections } = _vueThis.flowChart;
 
-        $.each(connections, function (index, elem) {
-          jsPlumb.connect({
-            uuids: elem.uuids
+        setTimeout(() => {
+          $.each(connections, function (index, elem) {
+            jsPlumb.connect({
+              uuids: JSON.parse(_vueThis.toJSON(elem.uuids))
+            });
           });
-        });
+        }, 16);
       },
 
       toJSON: function (src) {
