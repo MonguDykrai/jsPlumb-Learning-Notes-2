@@ -83,7 +83,7 @@
               const position = this.checkPosition(item);
 
               const targetId = item.connections[0].targetId;
-              const targetParams = this.toObject(this.getParams(targetId));
+              // const targetParams = this.toObject(this.getParams(targetId));
 
               const sourceId = item.connections[0].source.id;
               const sourceParams = this.toObject(this.getParams(sourceId));
@@ -91,8 +91,8 @@
               const collectionItem = {
                 id: sourceId,
                 pid: targetId,
-                targetParams,
-                sourceParams,
+                // targetParams,
+                params: sourceParams,
                 position
               };
 
@@ -100,9 +100,9 @@
                 delete collectionItem.position;
               }
 
-              if (collectionItem.pid) {
-                delete collectionItem.targetParams;
-              }
+              // if (collectionItem.pid) {
+              //   delete collectionItem.targetParams;
+              // }
 
               processCollection.push(collectionItem);
               return this.checkFlow({ id: sourceId, processCollection });
@@ -113,28 +113,17 @@
       checkProcess: function (e) {
         const blockId = this.attr.blockId;
         const sourceParams = this.toObject(this.getParams(blockId));
-        const processCollection = [{ id: blockId, pid: null, sourceParams }];
+        const processCollection = [{ id: blockId, pid: null, params: sourceParams }];
 
         this.checkFlow({ id: blockId, processCollection });
 
-        // let uniqKeys = [];
-        // processCollection.forEach(collect => {
-        //   uniqKeys.push(collect.id);
+        const arrUniqProcessParams = {};
 
-        //   if (collect.pid) {
-        //     uniqKeys.push(collect.pid);
-        //   }
-        // });
+        processCollection.forEach(collect => {
+          arrUniqProcessParams[collect.id] = { ...collect };
+        });
 
-        // uniqKeys = Array.from(new Set(uniqKeys));
-
-        // console.log(uniqKeys);
-
-        // uniqKeys.forEach(key => {
-
-        // });
-
-        // console.log(processCollection);
+        console.log(arrUniqProcessParams);
 
         const familyTree = this.toFamily(processCollection);
 
