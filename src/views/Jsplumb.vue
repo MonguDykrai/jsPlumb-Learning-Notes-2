@@ -3,11 +3,22 @@
     <div id="menuContainer" class="menu" style="left: 20px;">
       <p style="text-align: center;">Menu</p>
       <div class="menu-button-container">
-        <div class="button-add-task button menu-button ele-draggable" id="buttonAddTask" draggable="true">
-          Add Task
-        </div>
-        <div class="button-add-decision button menu-button ele-draggable" id="buttonAddDecision" draggable="true">
-          Add Decision
+        <div style="height: 100px; overflow: auto;">
+          <div class="button-add-task button menu-button ele-draggable" id="buttonAddTask" draggable="true">
+            Add Task
+          </div>
+          <div class="button menu-button">
+            empty
+          </div>
+          <div class="button menu-button">
+            empty
+          </div>
+          <div class="button menu-button">
+            empty
+          </div>
+          <div class="button-add-decision button menu-button ele-draggable" id="buttonAddDecision" draggable="true">
+            Add Decision
+          </div>
         </div>
         <div>
           <button id="saveButton" class="button menu-button" @click="handleSaveCanvas">
@@ -49,7 +60,6 @@
 
     data: function () {
       return {
-        connections: [],
         nodeType: {
           task: {
             blockId: "",
@@ -76,59 +86,7 @@
             }
           }
         },
-        // nodeList: [
-        //   {
-        //     blockId: "decisioncontainer1",
-        //     nodeType: "decision",
-        //     positionX: 1130,
-        //     positionY: 267,
-        //     param: {
-        //       processId: "decisioncontainer1",
-        //       decision: {
-        //         method: "Z-transformation"
-        //       }
-        //     }
-        //   },
-        //   {
-        //     blockId: "taskcontainer2",
-        //     nodeType: "task",
-        //     positionX: 729,
-        //     positionY: 170,
-        //     param: {
-        //       processId: "taskcontainer2",
-        //       taskContainer: {
-        //         useInput: true
-        //       }
-        //     }
-        //   },
-        //   {
-        //     blockId: "decisioncontainer3",
-        //     nodeType: "decision",
-        //     positionX: 745,
-        //     positionY: 401,
-        //     param: {
-        //       processId: "decisioncontainer3",
-        //       decision: {
-        //         method: "Z-transformation"
-        //       }
-        //     }
-        //   },
-        //   {
-        //     blockId: "taskcontainer4",
-        //     nodeType: "task",
-        //     positionX: 328,
-        //     positionY: 368,
-        //     param: {
-        //       processId: "taskcontainer2",
-        //       taskContainer: {
-        //         useInput: true
-        //       }
-        //     }
-        //   }
-        // ],
         nodeList: [],
-        connections: [],
-        numberOfElements: 0,
         offsetX: 0,
         offsetY: 0,
         canvasId: "#canvas",
@@ -163,32 +121,6 @@
         },
 
         flowChart: {},
-
-        // flowChart: {
-        //   "nodes": [
-        //     {
-        //       "blockId": "decision503114",
-        //       "nodeType": "decision",
-        //       "positionX": 516,
-        //       "positionY": 189
-        //     },
-        //     {
-        //       "blockId": "task504106",
-        //       "nodeType": "task",
-        //       "positionX": 945,
-        //       "positionY": 212
-        //     }
-        //   ],
-        //   "connections": [
-        //     {
-        //       "uuids": [
-        //         "decision503114rm-out",
-        //         "task504106lm-in"
-        //       ]
-        //     }
-        //   ],
-        //   "numberOfElements": 2
-        // },
 
         jsonOutput: ""
       }
