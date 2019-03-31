@@ -37,7 +37,8 @@
     </div>
 
     <div id="canvas">
-      <Node v-for="(item, index) in nodeList" :attr="item" :nodeList="nodeList" @on-remove-node="removeNode" />
+      <Node v-for="(item, index) in nodeList" :attr="item" :nodeList="nodeList" @on-update-params="updateParams"
+        @on-remove-node="removeNode" />
     </div>
 
     <textarea id="jsonOutput" style="width:100%; height:140px;" :value="jsonOutput">
@@ -67,9 +68,9 @@
             nodeType: "task",
             positionX: 0,
             positionY: 0,
-            param: {
+            params: {
               processId: "",
-              taskContainer: {
+              task: {
                 useInput: true
               }
             }
@@ -79,7 +80,7 @@
             nodeType: "decision",
             positionX: 0,
             positionY: 0,
-            param: {
+            params: {
               processId: "",
               decision: {
                 method: "Z-transformation"
@@ -157,6 +158,22 @@
     },
 
     methods: {
+      getParams: function (id) {
+        return this.querySelector(id).dataset.params;
+      },
+      querySelector: function (id) {
+        return document.querySelector(`#${id}`);
+      },
+      replaceNumber: function (src) {
+        return src.replace(/[0-9]/ig, "");
+      },
+      toObject: function (src) {
+        return JSON.parse(src);
+      },
+      updateParams: function ({ id, params }) {
+        const taskName = this.replaceNumber(id);
+        this.querySelector(id).dataset.params = this.toJSON({ processId: id, ...params });
+      },
       removeNode: function (val) {
         let blockId;
         this.nodeList = JSON.parse(val).nodeList;
@@ -249,7 +266,7 @@
             blockId,
           }
 
-          newNode.param.processId = newNode.blockId;
+          newNode.params.processId = newNode.blockId;
         }
 
         if (scenario.toLowerCase().indexOf("decision") > -1) {
@@ -262,7 +279,7 @@
             blockId,
           }
 
-          newNode.param.processId = newNode.blockId;
+          newNode.params.processId = newNode.blockId;
         }
 
         this.nodeList.push(newNode);
@@ -318,7 +335,8 @@
             blockId: $elem.attr("id"),
             nodeType: $elem.attr("data-nodetype"),
             positionX: parseInt($elem.css("left"), 10),
-            positionY: parseInt($elem.css("top"), 10)
+            positionY: parseInt($elem.css("top"), 10),
+            params: this.getParams($elem.attr("id"))
           });
         });
 
