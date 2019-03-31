@@ -219,8 +219,6 @@
       }
 
       init();
-
-      // this.initJsplumb();
     },
 
     methods: {
@@ -400,7 +398,33 @@
         this.flowChart.connections = connections;
         this.flowChart.numberOfElements = nodes.length;
 
-        console.log(this.toJSON(this.flowChart));
+        this.updateTask();
+      },
+
+      updateTask: function () {
+        fetch(
+          "http://localhost:3000/update-task-info",
+          {
+            method: "post",
+            body: JSON.stringify({
+              frontendData: {
+                ...this.flowChart
+              }
+            }),
+            headers: {
+              "content-type": "application/json"
+            }
+          }
+        )
+          .then(res => {
+            return res.json();
+          })
+          .then(response => {
+            console.log(response);
+          })
+          .catch(error => {
+            console.log(error);
+          });
       },
 
       loadFlowchart: function () {
@@ -424,7 +448,7 @@
               uuids: JSON.parse(_vueThis.toJSON(elem.uuids))
             });
           });
-        }, 16);
+        }, 0);
       },
 
       toJSON: function (src) {
